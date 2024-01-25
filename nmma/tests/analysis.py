@@ -73,6 +73,7 @@ def args():
         verbose=False,
         local_only=True,
         skip_sampling=False,
+        systematics_file="{dataDir}/systematic.yaml"
     )
 
     return args
