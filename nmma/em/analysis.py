@@ -1,14 +1,17 @@
+
 import argparse
 import json
 import os
 from pathlib import Path
 import yaml
 from ast import literal_eval
+import copy
 
 import bilby
 import bilby.core
 import matplotlib
 import numpy as np
+from scipy.interpolate import interp1d
 import pandas as pd
 from astropy import time
 from bilby.core.likelihood import ZeroLikelihood
@@ -18,10 +21,11 @@ from .injection import create_light_curve_data
 from .likelihood import OpticalLightCurve
 from .model import create_light_curve_model_from_args, model_parameters_dict
 from .prior import create_prior_from_args
-from .utils import getFilteredMag
+from .utils import getFilteredMag, dataProcess
 from .io import loadEvent
 
 matplotlib.use("agg")
+
 
 
 def get_parser(**kwargs):
@@ -75,7 +79,7 @@ def get_parser(**kwargs):
         "--tmin",
         type=float,
         default=0.05,
-        help="Days to start analysing from the trigger time (default: 0)",
+        help="Days to start analysing from the trigger time (default: 0.05)",
     )
     parser.add_argument(
         "--tmax",
@@ -120,6 +124,12 @@ def get_parser(**kwargs):
         "--filters",
         type=str,
         help="A comma seperated list of filters to use (e.g. g,r,i). If none is provided, will use all the filters available",
+    )
+    parser.add_argument(
+        "--use-Ebv",
+        action="store_true",
+        default=False,
+        help="If using the Ebv extinction during the inference",
     )
     parser.add_argument(
         "--Ebv-max",
@@ -369,6 +379,14 @@ def get_parser(**kwargs):
         default=False,
     )
 
+
+    parser.add_argument(
+        "--skip-sampling",
+        help="If analysis has already run, skip bilby sampling and compute results from checkpoint files. Combine with --plot to make plots from these files.",
+        action="store_true",
+        default=False,
+    )
+
     parser.add_argument(
         "--systematics-file",
         metavar="PATH",
@@ -546,6 +564,7 @@ def analysis(args):
         # load the kilonova afterglow data
         try:
             data = loadEvent(args.data)
+
         except ValueError:
             with open(args.data) as f:
                 data = json.load(f)
@@ -553,9 +572,16 @@ def analysis(args):
                     data[key] = np.array(data[key])
 
         if args.trigger_time is None:
-            raise ValueError("trigger_time required if using a data file.")
-
-        trigger_time = args.trigger_time
+            # load the minimum time as trigger time
+            min_time = np.inf
+            for key, array in data.items():
+                min_time = np.minimum(min_time, np.min(array[:, 0]))
+            trigger_time = min_time
+            print(
+                f"trigger_time is not provided, analysis will continue using a trigger time of {trigger_time}"
+            )
+        else:
+            trigger_time = args.trigger_time
 
     if args.remove_nondetections:
         filters_to_check = list(data.keys())
@@ -663,6 +689,16 @@ def analysis(args):
     else:
         nlive = args.nlive
 
+    if args.skip_sampling:
+        print("Sampling for 1 iteration and plotting checkpointed results.")
+        if args.sampler == "pymultinest":
+            sampler_kwargs["max_iter"] = 1
+        elif args.sampler == "ultranest":
+            sampler_kwargs["niter"] = 1
+        elif args.sampler == "dynesty":
+            sampler_kwargs["maxiter"] = 1
+
+
     result = bilby.run_sampler(
         likelihood,
         priors,
@@ -676,6 +712,17 @@ def analysis(args):
         check_point_delta_t=3600,
         **sampler_kwargs,
     )
+    # check if it is running under mpi
+    try:
+        from mpi4py import MPI
+        rank = MPI.COMM_WORLD.Get_rank()
+        if rank == 0:
+            pass
+        else:
+            return
+
+    except ImportError:
+        pass
 
     result.save_posterior_samples()
 
@@ -750,10 +797,60 @@ def analysis(args):
                 mag["bestfit_sample_times"] + bestfit_params["timeshift"]
             )
 
+        ######################
+        # calculate the chi2 #
+        ######################
+        processed_data = dataProcess(
+            data, filters_to_analyze, trigger_time, args.tmin, args.tmax
+        )
+        chi2 = 0.0
+        dof = 0.0
+        chi2_per_dof_dict = {}
+        for filt in filters_to_analyze:
+            # make best-fit lc interpolation
+            sample_times = mag["bestfit_sample_times"]
+            mag_used = mag[filt]
+            interp = interp1d(sample_times, mag_used)
+            # fetch data
+            samples = copy.deepcopy(processed_data[filt])
+            t, y, sigma_y = samples[:, 0], samples[:, 1], samples[:, 2]
+            # shift t values by timeshift
+            if "timeshift" in bestfit_params:
+                t += bestfit_params["timeshift"]
+            # only the detection data are needed
+            finite_idx = np.where(np.isfinite(sigma_y))[0]
+            if len(finite_idx) > 0:
+                # fetch the erorr_budget
+                if "em_syserr" in bestfit_params:
+                    err = bestfit_params["em_syserr"]
+                else:
+                    err = error_budget[filt]
+                t_det, y_det, sigma_y_det = (
+                    t[finite_idx],
+                    y[finite_idx],
+                    sigma_y[finite_idx],
+                )
+                num = (y_det - interp(t_det)) ** 2
+                den = sigma_y_det**2 + err**2
+                chi2_per_filt = np.sum(num / den)
+                # store the data
+                chi2 += chi2_per_filt
+                dof += len(finite_idx)
+                chi2_per_dof_dict[filt] = chi2_per_filt / len(finite_idx)
+
+        chi2_per_dof = chi2 / dof
+
+
     if args.bestfit:
         bestfit_to_write = bestfit_params.copy()
+        bestfit_to_write["log_bayes_factor"] = result.log_bayes_factor
+        bestfit_to_write["log_bayes_factor_err"] = result.log_evidence_err
         bestfit_to_write["Best fit index"] = int(bestfit_idx)
         bestfit_to_write["Magnitudes"] = {i: mag[i].tolist() for i in mag.keys()}
+        bestfit_to_write["chi2_per_dof"] = chi2_per_dof
+        bestfit_to_write["chi2_per_dof_per_filt"] = {
+            i: chi2_per_dof_dict[i].tolist() for i in chi2_per_dof_dict.keys()
+        }
         bestfit_file = os.path.join(args.outdir, f"{args.label}_bestfit_params.json")
 
         with open(bestfit_file, "w") as file:
