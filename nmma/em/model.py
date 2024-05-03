@@ -254,7 +254,7 @@ class SVDLightCurveModel(object):
                             self.svd_mag_model[filt] = {}
                         self.svd_mag_model[filt]["gps"] = None
                     else:
-                        print(f"Loaded filter {filt}")
+                        # print(f"Loaded filter {filt}")
                         with open(outfile, "rb") as handle:
                             self.svd_mag_model[filt]["gps"] = pickle.load(handle)
                 self.svd_lbol_model = None
