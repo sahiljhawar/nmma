@@ -58,17 +58,15 @@ jobs:
     
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
-      
       run: |
         mamba install -c conda-forge pyfftw
-        brew install openmpi gfortran hdf5 gcc openblas lapack mactex
-        export FC=$(which gfortran)
-        export CMAKE_Fortran_COMPILER=$(which gfortran)
-        export HDF5_DIR=$(brew --prefix hdf5)
-        export LDFLAGS="-L/opt/homebrew/opt/openblas/lib"
-        export CPPFLAGS="-I/opt/homebrew/opt/openblas/include"
-        export LDFLAGS="-L/opt/homebrew/opt/lapack/lib"
-        export CPPFLAGS="-I/opt/homebrew/opt/lapack/include"
+        brew install openmpi gfortran hdf5 gcc openblas lapack texlive
+        echo "FC=$(which gfortran)" >> $GITHUB_ENV
+        echo "CMAKE_Fortran_COMPILER=$(which gfortran)" >> $GITHUB_ENV
+        echo "HDF5_DIR=$(brew --prefix hdf5)" >> $GITHUB_ENV
+        echo "LDFLAGS=-L/opt/homebrew/opt/openblas/lib -L/opt/homebrew/opt/lapack/lib" >> $GITHUB_ENV
+        echo "CPPFLAGS=-I/opt/homebrew/opt/openblas/include -I/opt/homebrew/opt/lapack/include" >> $GITHUB_ENV
+  
 
     - name: Install Python dependencies
       run: |
@@ -91,7 +89,7 @@ jobs:
       run: |
         git clone https://github.com/JohannesBuchner/MultiNest
         cd MultiNest/build
-        cmake ..
+        cmake -DCMAKE_Fortran_COMPILER=$(which gfortran) ..
         make
         cd ../..
     - name: Lint with flake8
