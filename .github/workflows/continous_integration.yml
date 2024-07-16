@@ -1,7 +1,7 @@
 name: Unit Test nmma
 on:
   push:
-    branches: [main]
+    branches: [main, macOS-ci]
     paths-ignore:
       - 'doc/**'
   pull_request:
@@ -51,7 +51,7 @@ jobs:
       if: matrix.os == 'macos-latest'
       run: |
         brew install openmpi gfortran hdf5
-        conda install -c conda-forge pyfftw
+        $CONDA/bin/conda install -c conda-forge pyfftw
         export HDF5_DIR=$(brew --prefix hdf5)
     - name: Install Python dependencies
       run: |
