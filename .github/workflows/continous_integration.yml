@@ -50,8 +50,8 @@ jobs:
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
       run: |
-        brew install openmpi gfortran hdf5
         $CONDA/bin/conda install -c conda-forge pyfftw
+        brew install openmpi gfortran hdf5
         export HDF5_DIR=$(brew --prefix hdf5)
     - name: Install Python dependencies
       run: |
