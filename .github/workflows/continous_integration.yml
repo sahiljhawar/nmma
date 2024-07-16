@@ -21,7 +21,7 @@ jobs:
     - name: Checkout branch being tested
       uses: actions/checkout@v3
     - name: Set up Python with Conda ${{ matrix.python-version }}
-      uses: conda-incubator/setup-miniconda 
+      uses: conda-incubator/setup-miniconda@v3
       with:
         python-version: ${{ matrix.python-version }}
         miniforge-version: latest
