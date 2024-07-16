@@ -61,7 +61,7 @@ jobs:
       
       run: |
         mamba install -c conda-forge pyfftw
-        brew install openmpi gfortran hdf5 gcc openblas lapack texlive
+        brew install openmpi gfortran hdf5 gcc openblas lapack mactex
         export FC=$(which gfortran)
         export CMAKE_Fortran_COMPILER=$(which gfortran)
         export HDF5_DIR=$(brew --prefix hdf5)
