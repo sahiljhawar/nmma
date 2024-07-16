@@ -66,6 +66,10 @@ jobs:
         export FC=$(which gfortran)
         export CMAKE_Fortran_COMPILER=$(which gfortran)
         export HDF5_DIR=$(brew --prefix hdf5)
+        export LDFLAGS="-L/opt/homebrew/opt/openblas/lib"
+        export CPPFLAGS="-I/opt/homebrew/opt/openblas/include"
+        export LDFLAGS="-L/opt/homebrew/opt/lapack/lib"
+        export CPPFLAGS="-I/opt/homebrew/opt/lapack/include"
 
     - name: Install Python dependencies
       run: |
