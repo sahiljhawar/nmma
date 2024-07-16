@@ -77,7 +77,9 @@ jobs:
 
     - name: Install gcc
       if: matrix.os == 'macos-latest'
-      run:  brew install gcc
+      run: |
+        brew install gcc
+        export FC=$(brew --prefix gcc)/bin/gfortran
       
     - name: Install MultiNest
       run: |
