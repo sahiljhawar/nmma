@@ -69,32 +69,23 @@ jobs:
         python -m pip install --upgrade git+https://github.com/bitranox/wrapt_timeout_decorator.git
         python -m pip install pytest pytest-cov flake8 pytest-aiohttp sqlparse freezegun PyJWT joblib tensorflow afterglowpy coveralls
         python -m pip install .
-    - name: Install MultiNest
+
+    - name: Set up Homebrew
+      if: matrix.os == 'macos-latest'
+      id: set-up-homebrew
+      uses: Homebrew/actions/setup-homebrew@master
+
+    - name: Install gcc
+      if: matrix.os == 'macos-latest'
+      run:  brew install gcc
       
+    - name: Install MultiNest
       run: |
         git clone https://github.com/JohannesBuchner/MultiNest && cd MultiNest/build && cmake .. && make && cd ../..
     - name: Lint with flake8
       run: |
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude docs
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude docs,versioneer.py,nmma/_version.py,nmma/tests,nmma/*/__init__.py
-    - name: Set up PostgreSQL (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      
-      run: |
-        sudo apt-get install -y postgresql
-        sudo systemctl start postgresql.service
-        sudo -u postgres createuser --superuser $USER
-        createdb nmma
-    - name: Set up PostgreSQL (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew services start postgresql
-        createdb nmma
-    - name: Initialize database
-      run: |
-        echo "localhost:5432:*:$USER:anything" > ~/.pgpass
-        chmod 600 ~/.pgpass
-        psql -d nmma -c "GRANT ALL PRIVILEGES ON DATABASE nmma TO $USER;"
     - name: Test with pytest
       run: |
         python -m coverage run --source nmma -m pytest nmma/tests/*.py
