@@ -12,6 +12,9 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -el {0}
     strategy:
       fail-fast: false
       matrix:
@@ -36,7 +39,7 @@ jobs:
     - name: Get pip cache dir
       id: pip-cache
       run: |
-      shell: bash -el {0}
+      
         python -m pip install --upgrade pip setuptools wheel
         echo "dir=$(pip cache dir)" >> $GITHUB_OUTPUT
     - name: pip cache
@@ -48,26 +51,26 @@ jobs:
           ${{ runner.os }}-pip-2-
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
-      shell: bash -el {0}
+      
       run: |
         sudo apt-get update
         sudo apt-get install -y openmpi-bin libopenmpi-dev gfortran build-essential libblas3 libblas-dev liblapack3 liblapack-dev libatlas-base-dev texlive texlive-latex-extra texlive-fonts-recommended dvipng cm-super
     
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
-      shell: bash -el {0}
+      
       run: |
         mamba install -c conda-forge pyfftw
         brew install openmpi gfortran hdf5
         export HDF5_DIR=$(brew --prefix hdf5)
     - name: Install Python dependencies
       run: |
-      shell: bash -el {0}
+      
         python -m pip install --upgrade git+https://github.com/bitranox/wrapt_timeout_decorator.git
         python -m pip install pytest pytest-cov flake8 pytest-aiohttp sqlparse freezegun PyJWT joblib tensorflow afterglowpy coveralls
         python -m pip install .
     - name: Install MultiNest
-      shell: bash -el {0}
+      
       run: |
         git clone https://github.com/JohannesBuchner/MultiNest && cd MultiNest/build && cmake .. && make && cd ../..
     - name: Lint with flake8
@@ -76,7 +79,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude docs,versioneer.py,nmma/_version.py,nmma/tests,nmma/*/__init__.py
     - name: Set up PostgreSQL (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
-      shell: bash -el {0}
+      
       run: |
         sudo apt-get install -y postgresql
         sudo systemctl start postgresql.service
