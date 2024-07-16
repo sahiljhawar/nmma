@@ -72,6 +72,12 @@ jobs:
         python -m pip install pytest pytest-cov flake8 pytest-aiohttp sqlparse freezegun PyJWT joblib tensorflow afterglowpy coveralls
         python -m pip install .
 
+    - name: Install Tensorflow (MacOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        python -m pip install tensorflow-macos
+        python -m pip install tensorflow-metal
+
     - name: Set up Homebrew
       if: matrix.os == 'macos-latest'
       id: set-up-homebrew
