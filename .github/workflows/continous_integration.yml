@@ -62,7 +62,7 @@ jobs:
         export HDF5_DIR=$(brew --prefix hdf5)
     - name: Install Python dependencies
       run: |
-      shell: bash -l {0}
+      shell: bash -el {0}
         python -m pip install --upgrade git+https://github.com/bitranox/wrapt_timeout_decorator.git
         python -m pip install pytest pytest-cov flake8 pytest-aiohttp sqlparse freezegun PyJWT joblib tensorflow afterglowpy coveralls
         python -m pip install .
