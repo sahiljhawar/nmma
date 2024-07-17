@@ -79,7 +79,8 @@ jobs:
     - name: Install Tensorflow (MacOS)
       if: matrix.os == 'macos-latest'
       run: |
-        python -m pip uninstall -y tensorflow
+        python -m pip uninstall -y tensorflow-macos
+        python -m pip uninstall -y tensorflow-metal
         python -m pip install --no-cache-dir tensorflow-macos
         python -m pip install --no-cache-dir tensorflow-metal
 
