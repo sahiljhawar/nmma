@@ -30,6 +30,8 @@ jobs:
         miniforge-version: latest
         use-mamba: true
         mamba-version: "*"
+        activate-environment: nmma_env
+        
     - name: Restore SVD models from cache
       uses: actions/cache@v3
       with:
@@ -39,7 +41,6 @@ jobs:
     - name: Get pip cache dir
       id: pip-cache
       run: |
-      
         python -m pip install --upgrade pip setuptools wheel
         echo "dir=$(pip cache dir)" >> $GITHUB_OUTPUT
     - name: pip cache
@@ -51,7 +52,6 @@ jobs:
           ${{ runner.os }}-pip-2-
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
-      
       run: |
         sudo apt-get update
         sudo apt-get install -y openmpi-bin libopenmpi-dev gfortran build-essential libblas3 libblas-dev liblapack3 liblapack-dev libatlas-base-dev texlive texlive-latex-extra texlive-fonts-recommended dvipng cm-super
@@ -59,13 +59,11 @@ jobs:
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
       run: |
-        mamba install -c conda-forge pyfftw
-        brew install openmpi gfortran hdf5 gcc openblas lapack texlive
-        echo "FC=$(which gfortran)" >> $GITHUB_ENV
-        echo "CMAKE_Fortran_COMPILER=$(which gfortran)" >> $GITHUB_ENV
-        echo "HDF5_DIR=$(brew --prefix hdf5)" >> $GITHUB_ENV
-        echo "LDFLAGS=-L/opt/homebrew/opt/openblas/lib -L/opt/homebrew/opt/lapack/lib" >> $GITHUB_ENV
-        echo "CPPFLAGS=-I/opt/homebrew/opt/openblas/include -I/opt/homebrew/opt/lapack/include" >> $GITHUB_ENV
+        conda install -c conda-forge pyfftw c-compiler
+        brew install openmpi hdf5 gcc openblas lapack texlive cmake
+        echo "FC=$(which gfortran-11)" >> $GITHUB_ENV
+        echo "CC=$(which gcc)" >> $GITHUB_ENV
+        echo "CXX=$(which g++)" >> $GITHUB_ENV
   
 
     - name: Install Python dependencies
@@ -89,7 +87,7 @@ jobs:
       run: |
         git clone https://github.com/JohannesBuchner/MultiNest
         cd MultiNest/build
-        cmake -DCMAKE_Fortran_COMPILER=$(which gfortran) ..
+        cmake ..
         make
         cd ../..
     - name: Lint with flake8
