@@ -73,16 +73,13 @@ jobs:
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade git+https://github.com/bitranox/wrapt_timeout_decorator.git
-        python -m pip install pytest pytest-cov flake8 pytest-aiohttp sqlparse freezegun PyJWT joblib tensorflow afterglowpy coveralls
         python -m pip install .
+        python -m pip install pytest pytest-cov flake8 pytest-aiohttp sqlparse freezegun PyJWT joblib afterglowpy coveralls
 
     - name: Install Tensorflow (MacOS)
       if: matrix.os == 'macos-latest'
       run: |
-        python -m pip uninstall -y tensorflow-macos
-        python -m pip uninstall -y tensorflow-metal
-        python -m pip install --no-cache-dir tensorflow-macos
-        python -m pip install --no-cache-dir tensorflow-metal
+        python -m pip install tensorflow-macos tensorflow-metal
 
     - name: Set up Homebrew
       if: matrix.os == 'macos-latest'
