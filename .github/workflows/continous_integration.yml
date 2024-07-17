@@ -23,6 +23,8 @@ jobs:
     steps:
     - name: Checkout branch being tested
       uses: actions/checkout@v3
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Set up Python with Conda ${{ matrix.python-version }}
       uses: conda-incubator/setup-miniconda@v3
       with:
