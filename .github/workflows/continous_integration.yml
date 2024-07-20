@@ -60,7 +60,7 @@ jobs:
       if: matrix.os == 'macos-latest'
       run: |
         conda install -c conda-forge pyfftw c-compiler
-        brew install openmpi hdf5 gcc openblas lapack mactex cmake
+        brew install openmpi hdf5 gcc openblas lapack texlive cmake
         echo "FC=$(which gfortran-11)" >> $GITHUB_ENV
         echo "CC=$(which gcc)" >> $GITHUB_ENV
         echo "CXX=$(which g++)" >> $GITHUB_ENV
