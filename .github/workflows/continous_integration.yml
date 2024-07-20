@@ -98,8 +98,8 @@ jobs:
     - name: Export Libraries (MacOS)
       if: matrix.os == 'macos-latest'
       run: |
-        export LD_LIBRARY_PATH=/home/runner/work/nmma/nmma/MultiNest/lib:$LD_LIBRARY_PATH
-        export DYLD_LIBRARY_PATH=/home/runner/work/nmma/nmma/MultiNest/lib:$DYLD_LIBRARY_PATH
+        "echo LD_LIBRARY_PATH=/home/runner/work/nmma/nmma/MultiNest/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+        "echo DYLD_LIBRARY_PATH=/home/runner/work/nmma/nmma/MultiNest/lib:$DYLD_LIBRARY_PATH" >> $GITHUB_ENV
     - name: Lint with flake8
       run: |
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude docs
