@@ -78,6 +78,7 @@ jobs:
           
         key: brew-${{ hashFiles('**/pyproject.toml') }}
         restore-keys: brew-
+        save-always: true
         
     - name: Install Homebrew dependencies
       if: matrix.os == 'macos-latest'
