@@ -51,6 +51,12 @@ jobs:
         key: ${{ runner.os }}-pip-2-${{ hashFiles('**/pyproject.toml', '**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-2-
+
+    - uses: tecolicom/actions-use-homebrew-tools@v1
+      if: matrix.os == 'macos-latest'
+      with:
+        tools: openmpi hdf5 gcc openblas lapack texlive cmake
+        cache: yes
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       
@@ -62,7 +68,6 @@ jobs:
       if: matrix.os == 'macos-latest'
       run: |
         conda install -c conda-forge pyfftw c-compiler
-        brew install openmpi hdf5 gcc openblas lapack texlive cmake
         echo "FC=$(which gfortran-11)" >> $GITHUB_ENV
         echo "CC=$(which gcc)" >> $GITHUB_ENV
         echo "CXX=$(which g++)" >> $GITHUB_ENV
@@ -79,11 +84,6 @@ jobs:
     - name: Install Tensorflow (MacOS)
       if: matrix.os == 'macos-latest'
       run: conda install conda-forge::tensorflow
-        
-    - name: Set up Homebrew
-      if: matrix.os == 'macos-latest'
-      id: set-up-homebrew
-      uses: Homebrew/actions/setup-homebrew@master
       
     - name: Install MultiNest
       run: |
