@@ -108,7 +108,11 @@ jobs:
 
     - name: Install Tensorflow (MacOS)
       if: matrix.os == 'macos-latest'
-      run: conda install -c conda-forge tensorflow keras keras-cv
+      run: |
+        conda install -c apple tensorflow-deps
+        pip install tensorflow-metal
+        pip install tensorflow-macos
+        conda install jupyter numpy matplotlib
       
     - name: Install MultiNest
       run: |
