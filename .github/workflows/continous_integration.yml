@@ -38,6 +38,7 @@ jobs:
         path: svdmodels
         key: svdmodels-${{ runner.os }}-${{ hashFiles('**/LICENSE') }}
         restore-keys: svdmodels-${{ runner.os }}-
+        save-always: true
     - name: Get pip cache dir
       id: pip-cache
       run: |
@@ -109,11 +110,11 @@ jobs:
     - name: Install Tensorflow (MacOS)
       if: matrix.os == 'macos-latest'
       run: |
+        conda install jupyter numpy matplotlib
         conda install -c apple tensorflow-deps
         pip install tensorflow-metal
         pip install tensorflow-macos
-        conda install jupyter numpy matplotlib
-      
+        
     - name: Install MultiNest
       run: |
         git clone https://github.com/JohannesBuchner/MultiNest && cd MultiNest/build && rm -rf * && cmake .. && make && cd ../..
