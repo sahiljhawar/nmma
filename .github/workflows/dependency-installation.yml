@@ -39,19 +39,19 @@ jobs:
             echo "Verifying extra dependencies for ${{ matrix.nmma-extra }}"
             case "${{ matrix.nmma-extra }}" in
               "grb")
-                python -c "import nmma, afterglowpy"
+                python -c "import nmma, afterglowpy; print(f'Successfully imported {nmma.__name__}, {afterglowpy.__name__}')"
                 ;;
               "production")
-                python -c "import  nmma, parallel_bilby, nestcheck, mpi4py"
+                python -c "import  nmma, parallel_bilby, nestcheck, mpi4py; print(f'Successfully imported {nmma.__name__}, {parallel_bilby.__name__}, {nestcheck.__name__}, {mpi4py.__name__}')"
                 ;;
               "neuralnet")
-                python -c "import nmma, torch, nflows, torchvision"
+                python -c "import nmma, torch, nflows, torchvision; print(f'Successfully imported {nmma.__name__}, {torch.__name__}, {nflows.__name__}, {torchvision.__name__}')"
                 ;;
               "tf")
-                python -c "import nmma, tensorflow"
+                python -c "import nmma, tensorflow; print(f'Successfully imported {nmma.__name__}, {tensorflow.__name__}')"
                 ;;
               "sampler")
-                python -c "import nmma, ultranest"
+                python -c "import nmma, ultranest; print(f'Successfully imported {nmma.__name__}, {ultranest.__name__}')"
                 ;;
             esac
           fi
