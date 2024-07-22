@@ -32,6 +32,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y openmpi-bin libopenmpi-dev
 
-      - name: Install and remove NMMA
+      - name: Install NMMA
         run: |
           python -m pip install 'nmma${{ matrix.nmma-extra && format('[{0}]', matrix.nmma-extra) }} @ git+https://github.com/sahiljhawar/nmma.git@dependencies'
