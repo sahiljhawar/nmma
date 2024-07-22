@@ -16,6 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
+        nmma-extra: ["", "grb", "production", "neuralnet", "tf", "sampler"]
 
     steps:
       - name: Checkout branch being tested
@@ -31,33 +32,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y openmpi-bin libopenmpi-dev
 
-      - name: Install NMMA
-        run: |
-          python -m pip install pip-autoremove
-          python -m pip install 'git+https://github.com/sahiljhawar/nmma.git@python312'
-          pip-autoremove -y nmma
+      - name: Install pip-autoremove
+        run: python -m pip install pip-autoremove
 
-      - name: Install NMMA[grb]
+      - name: Install and remove NMMA
         run: |
-          python -m pip install 'nmma[grb] @ git+https://github.com/sahiljhawar/nmma.git@python312'
-          pip-autoremove -y nmma
-
-      - name: Install NMMA[production]
-        run: |
-          python -m pip install 'nmma[production] @ git+https://github.com/sahiljhawar/nmma.git@python312'
-          pip-autoremove -y nmma
-
-      - name: Install NMMA[neuralnet]
-        run: |
-          python -m pip install 'nmma[neuralnet] @ git+https://github.com/sahiljhawar/nmma.git@python312'
-          pip-autoremove -y nmma
-        
-      - name: Install NMMA[tf]
-        run: |
-          python -m pip install 'nmma[tf] @ git+https://github.com/sahiljhawar/nmma.git@python312'
-          pip-autoremove -y nmma
-
-      - name: Install NMMA[sampler]
-        run: |
-          python -m pip install 'nmma[sampler] @ git+https://github.com/sahiljhawar/nmma.git@python312'
+          python -m pip install 'nmma${{ matrix.nmma-extra && format('[{0}]', matrix.nmma-extra) }} @ git+https://github.com/sahiljhawar/nmma.git@dependencies'
           pip-autoremove -y nmma
