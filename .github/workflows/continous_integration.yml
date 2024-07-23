@@ -95,9 +95,8 @@ jobs:
           env HOMEBREW_NO_AUTO_UPDATE=1 brew install openmpi hdf5 gcc openblas lapack basictex cmake
           eval "$(/usr/libexec/path_helper)"
           sudo tlmgr update --self
-          sudo tlmgr install latex-recommended
-          sudo tlmgr install latex-extra
-          sudo tlmgr install fonts-recommended
+          sudo tlmgr install collection-latex
+          sudo tlmgr install collection-fontsrecommended
           sudo tlmgr install dvipng
           sudo tlmgr install cm-super
 
