@@ -35,10 +35,16 @@ jobs:
           activate-environment: nmma_env
 
       - name: Install linux packages
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y openmpi-bin libopenmpi-dev
-          
+
+      - name: Install Homebrew packages
+        if: matrix.os == 'macos-latest'
+        run: |
+          env HOMEBREW_NO_AUTO_UPDATE=1 brew install openmpi
+
       - name: Install NMMA (base)
         run: |
           python -m pip install 'nmma @ git+https://github.com/sahiljhawar/nmma.git@dependencies'
