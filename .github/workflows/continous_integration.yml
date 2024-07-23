@@ -27,7 +27,7 @@ jobs:
       uses: conda-incubator/setup-miniconda@v3
       with:
         python-version: ${{ matrix.python-version }}
-        architecture: "arm64"
+        architecture: ${{ matrix.os == 'macos-latest' && 'arm64' || 'x86_64' }}
         miniforge-version: latest
         use-mamba: true
         mamba-version: "*"
