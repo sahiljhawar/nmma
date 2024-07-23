@@ -95,6 +95,7 @@ jobs:
           env HOMEBREW_NO_AUTO_UPDATE=1 brew install openmpi hdf5 gcc openblas lapack texlive cmake
 
       - name: Install Linux Dependencies
+        if: matrix.os == 'ubuntu-latest'
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: openmpi-bin libopenmpi-dev gfortran build-essential libblas3 libblas-dev liblapack3 liblapack-dev libatlas-base-dev texlive texlive-latex-extra texlive-fonts-recommended dvipng cm-super
