@@ -110,6 +110,7 @@ jobs:
           echo "CXX=$(which g++)" >> $GITHUB_ENV
 
       - name: Install dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y texlive texlive-latex-extra texlive-fonts-recommended dvipng cm-super
