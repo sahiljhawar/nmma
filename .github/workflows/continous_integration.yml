@@ -80,8 +80,8 @@ jobs:
             ~/Library/Caches/Homebrew/downloads/*--openblas-*
             ~/Library/Caches/Homebrew/lapack--*
             ~/Library/Caches/Homebrew/downloads/*--lapack-*
-            ~/Library/Caches/Homebrew/texlive--*
-            ~/Library/Caches/Homebrew/downloads/*--texlive-*
+            ~/Library/Caches/Homebrew/basictex--*
+            ~/Library/Caches/Homebrew/downloads/*--basictex-*
             ~/Library/Caches/Homebrew/cmake--*
             ~/Library/Caches/Homebrew/downloads/*--cmake-*
 
