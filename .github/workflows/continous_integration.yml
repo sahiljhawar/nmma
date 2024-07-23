@@ -27,11 +27,21 @@ jobs:
       uses: conda-incubator/setup-miniconda@v3
       with:
         python-version: ${{ matrix.python-version }}
-        architecture: ${{ matrix.os == 'macos-latest' && 'arm64' || 'x86_64' }}
+        channels: conda-forge, defaults
         miniforge-version: latest
         use-mamba: true
         mamba-version: "*"
-        activate-environment: nmma_env
+        auto-activate-base: true
+
+    - name: Create Conda environment (MacOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        CONDA_SUBDIR=osx-arm64 conda create -n nmma python=${{ matrix.python-version }}
+
+    - name: Create Conda environment (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        conda create -n nmma python=${{ matrix.python-version }}
         
     - name: Restore SVD models from cache
       uses: actions/cache@v4
