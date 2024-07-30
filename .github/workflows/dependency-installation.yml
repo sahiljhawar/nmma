@@ -44,7 +44,7 @@ jobs:
       - name: Install Homebrew packages
         if: matrix.os == 'macos-latest'
         run: |
-          brew install openmpi hdf5
+          brew install openmpi hdf5 gcc
           python -m pip install --upgrade pip setuptools wheel
 
       - name: Install NMMA (base)
