@@ -40,6 +40,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y openmpi-bin libopenmpi-dev
           python -m pip install --upgrade pip setuptools wheel
+          conda install ligo-segments python-ligo-lw
 
       - name: Install Homebrew packages
         if: matrix.os == 'macos-latest'
