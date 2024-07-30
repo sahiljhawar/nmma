@@ -1,10 +1,10 @@
 name: Check NMMA dependencies installation
 on:
   push:
-    branches: [main]
+    branches: [main, check-py312]
     paths: ["*_requirements.txt", "pyproject.toml"]
   pull_request:
-    branches: [main]
+    branches: [main, check-py312]
     paths: ["*_requirements.txt", "pyproject.toml"]
   workflow_dispatch:
 
@@ -39,11 +39,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y openmpi-bin libopenmpi-dev
+          python -m pip install --upgrade pip setuptools wheel
 
       - name: Install Homebrew packages
         if: matrix.os == 'macos-latest'
         run: |
           env HOMEBREW_NO_AUTO_UPDATE=1 brew install openmpi hdf5
+          python -m pip install --upgrade pip setuptools wheel
 
       - name: Install NMMA (base)
         run: |
