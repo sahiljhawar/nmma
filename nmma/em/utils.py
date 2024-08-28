@@ -9,6 +9,7 @@ import scipy.signal
 import scipy.constants
 import scipy.stats
 from sncosmo.bandpasses import _BANDPASSES, _BANDPASS_INTERPOLATORS
+import onnxruntime as ort
 
 import sncosmo
 import dust_extinction.shapes as dustShp
@@ -393,6 +394,8 @@ def get_default_filts_lambdas(filters=None):
 def calc_lc(
     tt: np.array,
     param_list: np.array,
+    model: str,
+    svd_path: str,
     svd_mag_model: SVDTrainingModel = None,
     svd_lbol_model: SVDTrainingModel = None,
     mag_ncoeff: int = None,
@@ -405,6 +408,8 @@ def calc_lc(
     Args:
         tt (Array): Time grid on which to evaluate lightcurve
         param_list (Array): Input parameters for the surrogate model
+        model (str): Name of the model
+        svd_path (str): Path to the svd directory
         svd_mag_model (SVDTrainingModel): Trained surrogate model for mag
         svd_lbol_model (SVDTrainingModel): Trained surrogate model for lbol
         mag_ncoeff (int): Number of coefficients after SVD projection for mag
@@ -422,7 +427,7 @@ def calc_lc(
         for filt in filters:
             if filt.startswith(("radio", "X-ray")):
                 mAB[filt] = np.inf * np.ones(len(tt))
-
+    gps_models = {}
     for jj, filt in enumerate(filters):
         if filt in mAB:
             continue
@@ -471,21 +476,37 @@ def calc_lc(
                 cAproj[i] = y_pred
                 cAstd[i] = y_90_hi_test - y_90_lo_test
         else:
-            gps = svd_mag_model[filt]["gps"]
-            if gps is None:
-                raise ValueError(
-                    f"Gaussian process model for filter {filt} unavailable."
-                )
+            
+            gps_models[filt] = []
+            for idx in range(n_coeff):
+                onnx_file_path = os.path.join(svd_path, model, f"{filt}_gpr_{idx}.onnx")
+                print("onnx_file_path", onnx_file_path)
+                if os.path.isfile(onnx_file_path):
+                    gps_models[filt].append(onnx_file_path)
+                else:
+                    print(f"Model file not found for filter {filt}, index {idx}.")
+            # if gps is None:
+            #     raise ValueError(
+            #         f"Gaussian process model for filter {filt} unavailable."
+            #     )
 
             cAproj = np.zeros((n_coeff,))
             cAstd = np.zeros((n_coeff,))
             for i in range(n_coeff):
-                gp = gps[i]
-                y_pred, sigma2_pred = gp.predict(
-                    np.atleast_2d(param_list_postprocess), return_std=True
-                )
+                # gp = gps[i]
+                # y_pred, sigma2_pred = gp.predict(
+                #     np.atleast_2d(param_list_postprocess), return_std=True
+                # )
+                # cAproj[i] = y_pred
+                # cAstd[i] = sigma2_pred
+
+                gp = gps_models[filt][i]
+                print(gp)
+                session = ort.InferenceSession(gp, providers=["CPUExecutionProvider"])
+                input_name = session.get_inputs()[0].name
+                param_list_2d = np.atleast_2d(param_list_postprocess).astype(np.float64)
+                y_pred = session.run(None, {input_name: param_list_2d})[0]
                 cAproj[i] = y_pred
-                cAstd[i] = sigma2_pred
 
         # coverrors = np.dot(VA[:, :n_coeff], np.dot(np.power(np.diag(cAstd[:n_coeff]), 2), VA[:, :n_coeff].T))
         # errors = np.diag(coverrors)

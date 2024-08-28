@@ -277,16 +277,21 @@ class SVDLightCurveModel(LightCurveMixin):
 
                 outdir = os.path.join(self.svd_path, f"{model}")
                 for filt in self.filters:
-                    outfile = os.path.join(outdir, f"{filt}.joblib")
-                    if not os.path.isfile(outfile):
-                        print(f"Could not find model file for filter {filt}")
-                        if filt not in self.svd_mag_model:
-                            self.svd_mag_model[filt] = {}
-                        self.svd_mag_model[filt]["gps"] = None
-                    else:
-                        print(f"Loaded filter {filt}")
-                        self.svd_mag_model[filt]["gps"] = joblib.load(outfile)
-                self.svd_lbol_model = None
+                    self.svd_mag_model[filt]["gps"] = []
+                    for idx in range(self.svd_mag_model[filt]["n_coeff"]):
+                        outfile = os.path.join(outdir, f"{filt}_gpr_{idx}.onnx")
+                        # outfile = os.path.join(outdir, f"{filt}.joblib")
+                        if not os.path.isfile(outfile):
+                            print(f"Could not find model file for filter {filt}")
+                            if filt not in self.svd_mag_model:
+                                self.svd_mag_model[filt] = {}
+                            self.svd_mag_model[filt]["gps"] = None
+                        else:
+                            # print(f"Loaded filter {filt}")
+                            print(f"Loaded GPR number {idx} for filter {filt}")
+                            # self.svd_mag_model[filt]["gps"] = joblib.load(outfile)
+                            self.svd_mag_model[filt]["gps"].append(outfile)
+                    self.svd_lbol_model = None
             else:
                 if local_only:
                     raise ValueError(
@@ -381,6 +386,8 @@ class SVDLightCurveModel(LightCurveMixin):
             lbol_ncoeff=self.lbol_ncoeff,
             interpolation_type=self.interpolation_type,
             filters=self.filters,
+            model=self.model,
+            svd_path=self.svd_path,
         )
         lbol *= 1.0 + z
         for filt in mag.keys():
