@@ -16,3 +16,5 @@ tornado
 notebook
 ligo.skymap
 healpy
+skl2onnx
+onnxruntime
