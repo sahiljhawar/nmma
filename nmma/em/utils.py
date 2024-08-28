@@ -480,7 +480,6 @@ def calc_lc(
             gps_models[filt] = []
             for idx in range(n_coeff):
                 onnx_file_path = os.path.join(svd_path, model, f"{filt}_gpr_{idx}.onnx")
-                print("onnx_file_path", onnx_file_path)
                 if os.path.isfile(onnx_file_path):
                     gps_models[filt].append(onnx_file_path)
                 else:
@@ -489,7 +488,6 @@ def calc_lc(
             #     raise ValueError(
             #         f"Gaussian process model for filter {filt} unavailable."
             #     )
-
             cAproj = np.zeros((n_coeff,))
             cAstd = np.zeros((n_coeff,))
             for i in range(n_coeff):
@@ -500,8 +498,8 @@ def calc_lc(
                 # cAproj[i] = y_pred
                 # cAstd[i] = sigma2_pred
 
+
                 gp = gps_models[filt][i]
-                print(gp)
                 session = ort.InferenceSession(gp, providers=["CPUExecutionProvider"])
                 input_name = session.get_inputs()[0].name
                 param_list_2d = np.atleast_2d(param_list_postprocess).astype(np.float64)
