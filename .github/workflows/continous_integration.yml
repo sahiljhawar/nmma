@@ -121,7 +121,7 @@ jobs:
           
       - name: Install Python dependencies
         run: |
-          conda install -c conda-forge mpi4py
+          conda install -c -vv conda-forge mpi4py
           python -m pip install --upgrade git+https://github.com/bitranox/wrapt_timeout_decorator.git
           python -m pip install pytest pytest-cov flake8 pytest-aiohttp sqlparse freezegun PyJWT joblib coveralls
           python -m pip install -r  ml_requirements.txt -r grb_requirements.txt -r tf_requirements.txt -r sklearn_requirements.txt
