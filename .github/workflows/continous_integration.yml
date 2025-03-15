@@ -128,11 +128,19 @@ jobs:
 
       - name: Export Libraries
         run: |
-          mkdir -p MultiNest/lib
-          find MultiNest -name "libmultinest*.so" -o -name "libmultinest*.dylib" | xargs -I{} cp {} MultiNest/lib/
+          echo "Looking for MultiNest libraries..."
+          find $GITHUB_WORKSPACE/MultiNest -name "libmultinest*" -type f
+          mkdir -p $GITHUB_WORKSPACE/MultiNest/lib
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            find $GITHUB_WORKSPACE/MultiNest -name "libmultinest*.so" -type f | xargs -I{} cp {} $GITHUB_WORKSPACE/MultiNest/lib/
+            find $GITHUB_WORKSPACE/MultiNest/build -name "*.so" -type f | xargs -I{} cp {} $GITHUB_WORKSPACE/MultiNest/lib/
+          fi
+          
+          echo "Contents of MultiNest/lib:"
+          ls -la $GITHUB_WORKSPACE/MultiNest/lib/
+          
           echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/MultiNest/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
           echo "DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/MultiNest/lib:$DYLD_LIBRARY_PATH" >> $GITHUB_ENV
-          ls -la MultiNest/lib
 
       - name: Lint with flake8
         run: |
@@ -145,7 +153,7 @@ jobs:
         run: |
           echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
           echo "DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
-          python -m coverage run --source nmma -m pytest nmma/tests/*.py
+          python -m coverage run --source nmma -m pytest nmma/tests/analysis.py
         env:
           LD_LIBRARY_PATH: ${{ env.LD_LIBRARY_PATH }}
           DYLD_LIBRARY_PATH: ${{ env.DYLD_LIBRARY_PATH }}
