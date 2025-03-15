@@ -128,8 +128,11 @@ jobs:
 
       - name: Export Libraries
         run: |
-          echo "LD_LIBRARY_PATH=$HOME/work/nmma/nmma/MultiNest/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
-          echo "DYLD_LIBRARY_PATH=$HOME/work/nmma/nmma/MultiNest/lib:$DYLD_LIBRARY_PATH" >> $GITHUB_ENV
+          mkdir -p MultiNest/lib
+          find MultiNest -name "libmultinest*.so" -o -name "libmultinest*.dylib" | xargs -I{} cp {} MultiNest/lib/
+          echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/MultiNest/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+          echo "DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/MultiNest/lib:$DYLD_LIBRARY_PATH" >> $GITHUB_ENV
+          ls -la MultiNest/lib
 
       - name: Lint with flake8
         run: |
@@ -140,6 +143,8 @@ jobs:
 
       - name: Test with pytest
         run: |
+          echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
+          echo "DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
           python -m coverage run --source nmma -m pytest nmma/tests/*.py
         env:
           LD_LIBRARY_PATH: ${{ env.LD_LIBRARY_PATH }}
